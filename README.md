@@ -1,93 +1,110 @@
-# 10x Astro Starter
+## Oro
 
-A modern, opinionated starter template for building fast, accessible, and AI-friendly web applications.
+![Version](https://img.shields.io/badge/version-0.0.1-blue) ![Node](https://img.shields.io/badge/node-22.14.0-339933?logo=node.js&logoColor=white) ![Astro](https://img.shields.io/badge/Astro-5-ff5d01?logo=astro&logoColor=white) ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=061a2b) ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white) ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
-## Tech Stack
+## Project description
 
-- [Astro](https://astro.build/) v5.5.5 - Modern web framework for building fast, content-focused websites
-- [React](https://react.dev/) v19.0.0 - UI library for building interactive components
-- [TypeScript](https://www.typescriptlang.org/) v5 - Type-safe JavaScript
-- [Tailwind CSS](https://tailwindcss.com/) v4.0.17 - Utility-first CSS framework
+oro is a lightweight personal expense tracker focused on speed and clarity. It lets users log expenses in seconds and understand spending patterns without bank integrations or clutter. The MVP centers on an amount‑first Quick Add flow, AI‑assisted categorization, a fast list with essential filters and search, and a dashboard that visualizes where money goes.
 
-## Prerequisites
+Key objectives:
+- Minimize time‑to‑save for a new expense to under 5 seconds
+- Automatically categorize at least 80% of expenses with minimal input
+- Provide clear monthly visibility of spend distribution and trends
 
-- Node.js v22.14.0 (as specified in `.nvmrc`)
+Additional docs: [PRD](./.ai/prd.md) · [Tech Stack](./.ai/tech-stack.md)
+
+## Table of Contents
+
+- [Project description](#project-description)
+- [Tech stack](#tech-stack)
+- [Getting started locally](#getting-started-locally)
+- [Available scripts](#available-scripts)
+- [Project scope](#project-scope)
+- [Project status](#project-status)
+- [License](#license)
+
+## Tech stack
+
+- Frontend: Astro 5, React 19, TypeScript 5, Tailwind CSS 4, Shadcn/ui
+- Icons & styling helpers: lucide-react, class-variance-authority, clsx, tailwind-merge
+- Backend (planned): Supabase (PostgreSQL, Auth, RLS)
+- AI (planned): Openrouter.ai for model access and spend caps
+- Analytics (planned): PostHog instrumentation
+- CI/CD & Hosting (planned): GitHub Actions, Cloudflare
+- Node: 22.14.0 (see `.nvmrc`)
+- Tooling: ESLint, Prettier, lint-staged, Husky, Astro CLI
+
+## Getting started locally
+
+### Prerequisites
+
+- Node.js 22.14.0
 - npm (comes with Node.js)
-
-## Getting Started
-
-1. Clone the repository:
+- Optional: nvm for node version management
 
 ```bash
-git clone https://github.com/przeprogramowani/10x-astro-starter.git
-cd 10x-astro-starter
+# Use the exact Node version from .nvmrc
+nvm use
 ```
 
-2. Install dependencies:
+### Setup
 
 ```bash
+# 1) Clone the repository
+git clone <your-repo-url>
+cd oro
+
+# 2) Install dependencies
 npm install
-```
 
-3. Run the development server:
-
-```bash
+# 3) Start the dev server
 npm run dev
-```
 
-4. Build for production:
-
-```bash
+# 4) Build for production
 npm run build
+
+# 5) Preview the production build
+npm run preview
 ```
 
-## Available Scripts
+Configuration
+- No environment variables are required for the current UI scaffold.
+- Backend, AI, and analytics configuration will be added as those parts land.
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
-- `npm run lint:fix` - Fix ESLint issues
+## Available scripts
 
-## Project Structure
+- `npm run dev`: Start the development server
+- `npm run build`: Build the production bundle
+- `npm run preview`: Preview the production build locally
+- `npm run astro`: Run the Astro CLI directly
+- `npm run lint`: Run ESLint across the project
+- `npm run lint:fix`: Auto-fix lint issues where possible
+- `npm run format`: Format files with Prettier
 
-```md
-.
-├── src/
-│   ├── layouts/    # Astro layouts
-│   ├── pages/      # Astro pages
-│   │   └── api/    # API endpoints
-│   ├── components/ # UI components (Astro & React)
-│   └── assets/     # Static assets
-├── public/         # Public assets
-```
+## Project scope
 
-## AI Development Support
+In scope (MVP)
+- Add, edit, delete (soft delete with undo, hard delete after 7 days)
+- AI-based categorization with per-user mappings
+- Expense list with time/category/account filters, search, sorting, infinite scroll
+- Dashboard with monthly total, daily bars, MoM delta, donut breakdown, drill-through
+- Authentication via magic link and Google OAuth; 30-day rolling sessions
+- PostHog analytics for key funnels and AI performance
 
-This project is configured with AI development tools to enhance the development experience, providing guidelines for:
+Out of scope (MVP)
+- Bank connections or external API imports
+- Multi-currency support and conversions
+- Budgets, savings goals, or advanced analytics
+- Shared/group expenses; multi-user shared ledgers
+- Offline mode or background sync
+- Device/session management UI beyond sign-in/sign-out
 
-- Project structure
-- Coding practices
-- Frontend development
-- Styling with Tailwind
-- Accessibility best practices
-- Astro and React guidelines
+## Project status
 
-### Cursor IDE
+- Status: In development (pre‑MVP). Current version: 0.0.1.
+- Performance targets: AI response P95 < 350 ms; timeout strictly at 400 ms; list/dashboard interactions render within 100 ms after data fetch.
 
-The project includes AI rules in `.cursor/rules/` directory that help Cursor IDE understand the project structure and provide better code suggestions.
-
-### GitHub Copilot
-
-AI instructions for GitHub Copilot are available in `.github/copilot-instructions.md`
-
-### Windsurf
-
-The `.windsurfrules` file contains AI configuration for Windsurf.
-
-## Contributing
-
-Please follow the AI guidelines and coding practices defined in the AI configuration files when contributing to this project.
+Reference: [PRD](./.ai/prd.md) · [Tech Stack](./.ai/tech-stack.md)
 
 ## License
 
