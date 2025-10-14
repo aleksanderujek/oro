@@ -79,7 +79,7 @@
     - `account` (enum: `cash`, `card`)
     - `search` (string; uses trigram search on `search_text`)
     - `includeDeleted` (boolean; default `false`)
-    - `cursor` (string; encoded `(occurred_at, amount, id)` tuple)
+    - `cursor` (string; encoded `(occurred_at, id)` tuple)
     - `limit` (int; 1-50, default 50)
   - **Request Payload**: _None_
   - **Response Payload**:
@@ -99,7 +99,7 @@
       "updatedAt": "2025-02-15T08:30:05Z"
     }
   ],
-  "nextCursor": "2025-02-15T08:29:59Z|24.99|uuid",
+  "nextCursor": "2025-02-15T08:29:59Z|uuid",
   "hasMore": true
 }
 ```
@@ -108,7 +108,7 @@
 
 - **HTTP Method**: POST
   - **URL Path**: `/expenses`
-  - **Description**: Create a new expense (Quick Add and full form share this endpoint). Server normalizes merchant name, sets defaults, triggers AI categorization workflow as needed.
+  - **Description**: Create a new expense (Quick Add and full form share this endpoint). Server normalizes merchant name, applies defaults (e.g., account, uncategorized), and persists the record. Client is responsible for resolving merchant mappings and triggering AI categorization before calling this endpoint.
   - **Query Parameters**: None
   - **Request Payload**:
 ```json
@@ -117,7 +117,7 @@
   "name": "Coffee Shop",
   "description": "Latte and croissant",
   "occurredAt": "2025-02-15T08:30:00Z",
-  "categoryId": "uuid", // optional when relying on AI
+  "categoryId": "uuid",
   "account": "card"
 }
 ```
@@ -131,20 +131,13 @@
   "occurredAt": "2025-02-15T08:30:00Z",
   "account": "card",
   "categoryId": "uuid",
-  "ai": {
-    "appliedCategoryId": "uuid",
-    "confidence": 0.82,
-    "provider": "openrouter:gpt-4o-mini",
-    "latencyMs": 180,
-    "timedOut": false
-  },
   "deleted": false,
   "createdAt": "2025-02-15T08:30:05Z",
   "updatedAt": "2025-02-15T08:30:05Z"
 }
 ```
   - **Success Codes**: `201 Created`
-  - **Error Codes**: `400 Bad Request` (validation failure), `401 Unauthorized`, `403 Forbidden`, `409 Conflict` (duplicate request detected), `422 Unprocessable Entity` (AI service failure if save blocked), `500 Internal Server Error`
+  - **Error Codes**: `400 Bad Request` (validation failure), `401 Unauthorized`, `403 Forbidden`, `409 Conflict` (duplicate request detected), `500 Internal Server Error`
 
 - **HTTP Method**: GET
   - **URL Path**: `/expenses/{id}`
@@ -232,6 +225,26 @@
   - **Success Codes**: `200 OK`
   - **Error Codes**: `401 Unauthorized`, `403 Forbidden`, `500 Internal Server Error`
 
+- **HTTP Method**: GET
+  - **URL Path**: `/merchant-mappings/resolve`
+  - **Description**: Resolve a merchant name to a mapped category if an exact or trigram (≥ 0.8) match exists.
+  - **Query Parameters**:
+    - `name` (string; required raw merchant label input)
+  - **Request Payload**: _None_
+  - **Response Payload**:
+```json
+{
+  "match": {
+    "categoryId": "uuid",
+    "confidence": 1,
+    "matchType": "exact",
+    "merchantKey": "coffeeshop"
+  }
+}
+```
+  - **Success Codes**: `200 OK` (with `match` or `null`)
+  - **Error Codes**: `400 Bad Request` (missing name), `401 Unauthorized`, `403 Forbidden`, `500 Internal Server Error`
+
 - **HTTP Method**: POST
   - **URL Path**: `/merchant-mappings`
   - **Description**: Create or update a merchant mapping manually; server enforces uniqueness and normalization.
@@ -287,7 +300,7 @@
 ### AI Categorization
 - **HTTP Method**: POST
   - **URL Path**: `/ai/categorize`
-  - **Description**: Invoke AI categorization after merchant mapping check; enforces 400 ms timeout and logs results in `ai_logs`.
+  - **Description**: Invoke AI categorization after the client confirms no merchant mapping exists; enforces 400 ms timeout and logs results in `ai_logs`.
   - **Query Parameters**: None
   - **Request Payload**:
 ```json
@@ -398,12 +411,12 @@
   - `name` max 64 chars, `description` max 200 chars; server applies `squeeze_whitespace` normalization.
   - Require `occurredAt` (UTC) and ensure not more than allowed drift (optional guard); convert device time to UTC client-side.
   - `account` optional enum (`cash`, `card`); default to `profiles.last_account` when absent and update profile.
-  - `categoryId` required unless auto-categorized or `Uncategorized`; fall back to UNCATEGORIZED UUID if none supplied.
+  - `categoryId` required unless client keeps Uncategorized; clients must resolve merchant mapping (via `/merchant-mappings/resolve`) or AI categorization prior to submission.
   - Soft delete sets `deleted_at`; restore clears it. Hard delete handled by scheduled purge after 7 days (service role, not exposed here).
-  - Response includes AI telemetry when categorization triggered; server writes `ai_logs` (for success, timeout, or failure) and updates `merchant_mappings` when users override AI suggestions.
-  - Keyset pagination uses index `(user_id, occurred_at DESC, amount DESC, id DESC)`; cursors encode those fields.
-- **Merchant Mappings**: Normalize `merchantName` via `normalize_merchant`, enforce uniqueness on `(user_id, merchant_key)`, disallow modifying `merchantKey` after creation.
-- **AI Categorization**: Before calling external models, check merchant mappings (exact + trigram ≥ 0.8). Apply category automatically when confidence ≥ 0.75; otherwise return top 3 suggestions. Enforce 400 ms timeout; log `timed_out=true` on fallback. Allow saving expense as Uncategorized when AI unavailable.
+  - Response does not include AI telemetry; client supplies chosen category or leaves Uncategorized and may emit analytics events referencing AI results.
+  - Keyset pagination uses index `(user_id, occurred_at DESC, id DESC)`; cursors encode those fields.
+- **Merchant Mappings**: Normalize `merchantName` via `normalize_merchant`, enforce uniqueness on `(user_id, merchant_key)`, disallow modifying `merchantKey` after creation. `/merchant-mappings/resolve` returns exact match at confidence 1 or best trigram match ≥ 0.8 with corresponding confidence score.
+- **AI Categorization**: Client first calls `/merchant-mappings/resolve`; if no match returned, it may call `/ai/categorize`. Apply category automatically on client when confidence ≥ 0.75; otherwise show top 3 suggestions. Enforce 400 ms timeout server-side; log `timed_out=true` on fallback. Allow saving expense as Uncategorized when AI unavailable.
 - **Dashboard**: Aggregate expenses filtered by month, account, and categories; exclude soft-deleted rows; compute daily totals and month-over-month delta handling division by zero. Timezone conversions use `profiles.timezone`.
 - **Authentication**: Emails validated; magic link requests throttled. Sign-out revokes refresh tokens and clears local session.
 - **AI Logs**: Validate `confidence` range 0-1, ensure `latencyMs` non-negative, and sanitize `queryText` (trim length). Access restricted to service role for analytics.
