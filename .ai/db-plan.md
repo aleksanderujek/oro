@@ -31,7 +31,7 @@ Constraints/notes:
 ### public.expenses
 - **id** — uuid, primary key, not null, default `gen_random_uuid()`
 - **user_id** — uuid, not null, references `auth.users(id)` on delete cascade (auto-set on insert; updates blocked)
-- **amount** — bigint, not null, check `(amount > 0)`
+- **amount** — real, not null, check `(amount > 0)`
 - **name** — varchar(64), not null
 - **description** — varchar(200), null
 - **occurred_at** — timestamptz, not null (UTC; no DB default)
