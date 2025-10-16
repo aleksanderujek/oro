@@ -1,0 +1,17 @@
+@baseUrl = http://localhost:3000
+@categoryId = 00000000-0000-0000-0000-000000000000
+
+### Create expense
+POST {{baseUrl}}/api/expenses
+Content-Type: application/json
+Accept: application/json
+
+{
+  "amount": 49.99,
+  "name": "Mock Expense",
+  "description": "Mock expense created from HTTP file",
+  "occurredAt": "2025-10-16T12:00:00Z",
+  "categoryId": "{{categoryId}}",
+  "account": "card"
+}
+
