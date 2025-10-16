@@ -1,6 +1,7 @@
 ## 1. List of tables with their columns, data types, and constraints
 
 ### public.profiles
+
 - **id** — uuid, primary key, references `auth.users(id)` on delete cascade, not null
 - **last_account** — `account_type` enum, null
 - **timezone** — text, null (IANA TZ identifier, e.g., `Europe/Warsaw`)
@@ -8,13 +9,15 @@
 - **updated_at** — timestamptz, not null, default `now()`
 
 Constraints/notes:
+
 - RLS restricted to the owner (see section 4)
 - `updated_at` auto-managed via shared trigger
- - IANA timezone enforced via `CHECK (timezone IS NULL OR is_valid_iana_timezone(timezone))`
+- IANA timezone enforced via `CHECK (timezone IS NULL OR is_valid_iana_timezone(timezone))`
 
 ---
 
 ### public.categories
+
 - **id** — uuid, primary key, not null (deterministic UUIDs for seeds)
 - **key** — text, unique, not null (stable programmatic identifier)
 - **name** — text, not null (display name)
@@ -23,12 +26,14 @@ Constraints/notes:
 - **updated_at** — timestamptz, not null, default `now()`
 
 Constraints/notes:
+
 - Client read-only; deletes disallowed (see section 4)
 - Pre-seed `Uncategorized` with deterministic UUID and `key = 'uncategorized'`
 
 ---
 
 ### public.expenses
+
 - **id** — uuid, primary key, not null, default `gen_random_uuid()`
 - **user_id** — uuid, not null, references `auth.users(id)` on delete cascade (auto-set on insert; updates blocked)
 - **amount** — real, not null, check `(amount > 0)`
@@ -45,12 +50,14 @@ Constraints/notes:
 - **updated_at** — timestamptz, not null, default `now()`
 
 Constraints/notes:
+
 - Trim/collapse whitespace on `name`/`description` via trigger
 - `user_id` set to `auth.uid()` on insert and immutable thereafter
 
 ---
 
 ### public.merchant_mappings
+
 - **id** — uuid, primary key, not null, default `gen_random_uuid()`
 - **user_id** — uuid, not null, references `auth.users(id)` on delete cascade
 - **merchant_key** — varchar(128), not null
@@ -58,12 +65,14 @@ Constraints/notes:
 - **updated_at** — timestamptz, not null, default `now()`
 
 Constraints/notes:
+
 - Unique `(user_id, merchant_key)`
 - Used for exact first, then trigram similarity lookups (≥ 0.8)
 
 ---
 
 ### public.ai_logs
+
 - **id** — uuid, primary key, not null, default `gen_random_uuid()`
 - **user_id** — uuid, not null, references `auth.users(id)` on delete cascade
 - **expense_id** — uuid, null, references `public.expenses(id)`
@@ -79,16 +88,18 @@ Constraints/notes:
 - **created_at** — timestamptz, not null, default `now()`
 
 Constraints/notes:
+
 - Retained indefinitely for MVP
 
 ---
 
 ### Views
+
 - **public.expenses_active** — `select * from public.expenses where deleted_at IS NULL`
 - **public.expenses_deleted** — `select * from public.expenses where deleted_at IS NOT NULL`
 
-
 ## 2. Relationships between tables
+
 - **auth.users (1) → public.profiles (1)**: `profiles.id` FK to `auth.users.id`; cascade on delete
 - **auth.users (1) → public.expenses (many)**: `expenses.user_id` FK; cascade on delete
 - **public.categories (1) → public.expenses (many)**: `expenses.category_id` FK
@@ -98,6 +109,7 @@ Constraints/notes:
 - **public.expenses (1) → public.ai_logs (many)**: optional `ai_logs.expense_id` FK
 
 Cardinality summary:
+
 - User 1—1 Profile
 - User 1—N Expenses
 - Category 1—N Expenses
@@ -105,8 +117,8 @@ Cardinality summary:
 - Category 1—N Merchant mappings
 - User 1—N AI logs; Expense 1—N AI logs (optional)
 
-
 ## 3. Indexes
+
 - public.expenses
   - Primary key on `(id)`
   - Partial composite btree for list and keyset pagination:
@@ -126,8 +138,8 @@ Cardinality summary:
   - Primary key on `(id)`
   - (Optional) btree on `(user_id, created_at DESC)` for investigative queries
 
-
 ## 4. PostgreSQL policies (RLS)
+
 Enable RLS on all tables below unless noted.
 
 - public.profiles
@@ -161,8 +173,8 @@ Enable RLS on all tables below unless noted.
 - Views `expenses_active` / `expenses_deleted`
   - Inherit RLS from `public.expenses`
 
-
 ## 5. Additional notes and design decisions
+
 - Extensions to enable: `pgcrypto` (for `gen_random_uuid()`), `pg_trgm`, `unaccent`
 - Enum type: `account_type AS ENUM ('cash', 'card')`
 - Generated columns:

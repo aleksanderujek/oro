@@ -7,6 +7,7 @@
 oro is a lightweight personal expense tracker focused on speed and clarity. It lets users log expenses in seconds and understand spending patterns without bank integrations or clutter. The MVP centers on an amount‑first Quick Add flow, AI‑assisted categorization, a fast list with essential filters and search, and a dashboard that visualizes where money goes.
 
 Key objectives:
+
 - Minimize time‑to‑save for a new expense to under 5 seconds
 - Automatically categorize at least 80% of expenses with minimal input
 - Provide clear monthly visibility of spend distribution and trends
@@ -68,6 +69,7 @@ npm run preview
 ```
 
 Configuration
+
 - No environment variables are required for the current UI scaffold.
 - Backend, AI, and analytics configuration will be added as those parts land.
 
@@ -84,6 +86,7 @@ Configuration
 ## Project scope
 
 In scope (MVP)
+
 - Add, edit, delete (soft delete with undo, hard delete after 7 days)
 - AI-based categorization with per-user mappings
 - Expense list with time/category/account filters, search, sorting, infinite scroll
@@ -92,6 +95,7 @@ In scope (MVP)
 - PostHog analytics for key funnels and AI performance
 
 Out of scope (MVP)
+
 - Bank connections or external API imports
 - Multi-currency support and conversions
 - Budgets, savings goals, or advanced analytics
