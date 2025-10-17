@@ -1,0 +1,7 @@
+@baseUrl = http://localhost:3000
+
+
+### Get profile
+GET {{baseUrl}}/api/profiles/me
+Content-Type: application/json
+Accept: application/json

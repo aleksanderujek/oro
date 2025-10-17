@@ -14,4 +14,3 @@ Accept: application/json
   "categoryId": "{{categoryId}}",
   "account": "card"
 }
-
