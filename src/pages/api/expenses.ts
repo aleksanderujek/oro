@@ -1,36 +1,10 @@
 import type { APIRoute } from "astro";
 
+import { buildErrorResponse, buildJsonResponse, getRequestId } from "../../lib/http/responses";
 import { createExpense, CreateExpenseError } from "../../lib/services/expenses/createExpense";
 import { validateCreateExpenseCommand } from "../../lib/validators/expenses";
 
 export const prerender = false;
-
-interface ErrorBody {
-  code: string;
-  message: string;
-}
-
-function buildErrorResponse(status: number, body: ErrorBody, requestId?: string) {
-  const init: ResponseInit = {
-    status,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
-
-  if (requestId) {
-    init.headers = {
-      ...init.headers,
-      "X-Request-Id": requestId,
-    };
-  }
-
-  return new Response(JSON.stringify(body), init);
-}
-
-function getRequestId(request: Request) {
-  return request.headers.get("x-request-id") ?? undefined;
-}
 
 export const POST: APIRoute = async ({ request, locals }) => {
   const requestId = getRequestId(request);
@@ -76,18 +50,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       input: command,
     });
 
-    const response = new Response(JSON.stringify(result.expense), {
-      status: 201,
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (requestId) {
-      response.headers.set("X-Request-Id", requestId);
-    }
-
-    return response;
+    return buildJsonResponse(result.expense, 201, requestId);
   } catch (error) {
     if (error instanceof CreateExpenseError) {
       switch (error.code) {

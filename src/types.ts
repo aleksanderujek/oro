@@ -5,7 +5,7 @@ type CategoryRow = Tables<"categories">;
 type ExpenseRow = Tables<"expenses">;
 type MerchantMappingRow = Tables<"merchant_mappings">;
 type AiLogRow = Tables<"ai_logs">;
-type AccountType = Enums<"account_type">;
+export type AccountType = Enums<"account_type">;
 
 type CurrencyAmount = ExpenseRow["amount"];
 type CursorString = string;
