@@ -1,0 +1,10 @@
+@baseUrl = http://localhost:3000
+
+### List categories (include uncategorized)
+GET {{baseUrl}}/api/categories?includeUncategorized=true
+Accept: application/json
+
+### List categories (exclude uncategorized)
+GET {{baseUrl}}/api/categories?includeUncategorized=false
+Accept: application/json
+
