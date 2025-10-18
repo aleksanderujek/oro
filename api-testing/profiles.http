@@ -5,3 +5,14 @@
 GET {{baseUrl}}/api/profiles/me
 Content-Type: application/json
 Accept: application/json
+
+
+### Update profile
+PATCH {{baseUrl}}/api/profiles/me
+Content-Type: application/json
+Accept: application/json
+
+{
+  "timezone": "Europe/Warsaw",
+  "lastAccount": "card"
+}

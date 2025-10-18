@@ -1,6 +1,7 @@
 import type { Tables } from "../../../db/database.types";
 import type { SupabaseClient } from "../../../db/supabase.client";
-import type { AccountType, ProfileDTO } from "../../../types";
+import type { ProfileDTO } from "../../../types";
+import { InvalidAccountTypeError, toProfileDTO } from "./mappers";
 
 export type GetProfileErrorCode = "PROFILE_LOOKUP_FAILED" | "PROFILE_NOT_FOUND" | "INVALID_ACCOUNT_TYPE";
 
@@ -26,43 +27,6 @@ interface GetProfileParams {
 
 type ProfileRow = Tables<"profiles">;
 
-const VALID_ACCOUNT_TYPES = new Set<AccountType>(["cash", "card"]);
-
-function isValidAccountType(value: ProfileRow["last_account"]): value is AccountType | null {
-  if (value === null) {
-    return true;
-  }
-
-  return VALID_ACCOUNT_TYPES.has(value as AccountType);
-}
-
-function assertValidAccountType(
-  value: ProfileRow["last_account"],
-  context: { userId: string; requestId?: string }
-): AccountType | null {
-  if (isValidAccountType(value)) {
-    return value;
-  }
-
-  throw new GetProfileError("INVALID_ACCOUNT_TYPE", "Profile default account is invalid", {
-    cause: {
-      userId: context.userId,
-      requestId: context.requestId,
-      accountType: value,
-    },
-  });
-}
-
-function toProfileDTO(row: ProfileRow, context: { userId: string; requestId?: string }): ProfileDTO {
-  return {
-    id: row.id,
-    timezone: row.timezone,
-    lastAccount: assertValidAccountType(row.last_account, context),
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-  };
-}
-
 export async function getProfile({ supabase, userId, requestId }: GetProfileParams): Promise<ProfileDTO> {
   const { data, error } = await supabase
     .from("profiles")
@@ -80,5 +44,17 @@ export async function getProfile({ supabase, userId, requestId }: GetProfilePara
     throw new GetProfileError("PROFILE_NOT_FOUND", "Profile not found for user");
   }
 
-  return toProfileDTO(data, { userId, requestId });
+  try {
+    return toProfileDTO(data);
+  } catch (error) {
+    if (error instanceof InvalidAccountTypeError) {
+      throw new GetProfileError("INVALID_ACCOUNT_TYPE", error.message, {
+        cause: { userId, requestId, accountType: error.cause },
+      });
+    }
+
+    throw new GetProfileError("PROFILE_LOOKUP_FAILED", "Unable to load profile", {
+      cause: { error, userId, requestId },
+    });
+  }
 }
