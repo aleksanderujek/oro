@@ -56,11 +56,7 @@ function toExpenseDTO(row: ExpenseRow): ExpenseDTO {
  * Fetches expense and verifies ownership and existence
  * Throws UpdateExpenseError if expense not found or user lacks ownership
  */
-async function fetchExpenseForUpdate(
-  supabase: SupabaseClient,
-  userId: string,
-  expenseId: string
-): Promise<ExpenseRow> {
+async function fetchExpenseForUpdate(supabase: SupabaseClient, userId: string, expenseId: string): Promise<ExpenseRow> {
   const { data, error } = await supabase
     .from("expenses")
     .select("id")
@@ -137,17 +133,11 @@ function buildUpdatePayload(input: UpdateExpenseCommand): TablesUpdate<"expenses
 
 /**
  * Updates an existing expense with partial update semantics
- * 
+ *
  * @throws {UpdateExpenseError} When expense not found, category invalid, or database error occurs
  * @returns Updated expense as ExpenseDTO
  */
-export async function updateExpense({
-  supabase,
-  userId,
-  expenseId,
-  input,
-  requestId,
-}: UpdateExpenseParams): Promise<ExpenseDTO> {
+export async function updateExpense({ supabase, userId, expenseId, input }: UpdateExpenseParams): Promise<ExpenseDTO> {
   // Verify expense exists and user has ownership
   await fetchExpenseForUpdate(supabase, userId, expenseId);
 
@@ -175,4 +165,3 @@ export async function updateExpense({
   // Map to DTO and return
   return toExpenseDTO(data);
 }
-

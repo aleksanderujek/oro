@@ -6,7 +6,7 @@ import type { ExpenseDTO, ExpenseListResponse } from "../../../types";
 import type { ExpenseListFilters, ExpenseTimeRange } from "../../validators/expenses";
 import { encodeExpenseCursor } from "../../validators/expenses";
 import type { PostgrestError } from "@supabase/supabase-js";
-import type { PostgrestFilterBuilder, PostgrestResponse } from "@supabase/postgrest-js";
+import type { PostgrestResponse } from "@supabase/postgrest-js";
 
 export type GetExpensesErrorCode =
   | "PROFILE_LOOKUP_FAILED"
@@ -126,7 +126,7 @@ function resolveDateRange(filters: ExpenseListFilters, timezone: string | null):
     },
   };
 
-  return rangeMap[filters.timeRange]!();
+  return rangeMap[filters.timeRange]();
 }
 
 function computeNextCursor(rows: ExpenseRow[], limit: number): string | null {

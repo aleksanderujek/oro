@@ -5,6 +5,7 @@
 The PATCH `/expenses/{id}` endpoint allows authenticated users to update editable fields of an existing expense. This endpoint implements partial update semantics, requiring at least one field to be provided while maintaining data integrity and authorization controls.
 
 **Key Characteristics:**
+
 - Supports partial updates (at least one field required)
 - Preserves soft-delete flag (does not restore deleted expenses)
 - Validates ownership before allowing updates
@@ -14,25 +15,31 @@ The PATCH `/expenses/{id}` endpoint allows authenticated users to update editabl
 ## 2. Request Details
 
 ### HTTP Method
+
 PATCH
 
 ### URL Structure
+
 ```
 /api/expenses/{id}
 ```
 
 ### Path Parameters
+
 - **id** (required): UUID of the expense to update
 
 ### Query Parameters
+
 None
 
 ### Request Headers
+
 - `Content-Type: application/json` (required)
 - `X-Request-Id: <request-id>` (optional, for tracing)
 - Authentication cookies (managed by Supabase middleware)
 
 ### Request Body
+
 JSON object conforming to `UpdateExpenseCommand` type. At least one field must be provided:
 
 ```json
@@ -47,6 +54,7 @@ JSON object conforming to `UpdateExpenseCommand` type. At least one field must b
 ```
 
 **Field Specifications:**
+
 - `amount` (optional): Positive number with max 2 decimal places
 - `name` (optional): String, max 64 characters, trimmed, non-empty after whitespace normalization
 - `description` (optional): String, max 200 characters, trimmed, can be explicitly set to `null` to clear
@@ -57,17 +65,21 @@ JSON object conforming to `UpdateExpenseCommand` type. At least one field must b
 ## 3. Used Types
 
 ### DTOs
+
 - **ExpenseDTO**: Response object containing all expense fields
 - **ExpenseDetailsResponse**: Alias for ExpenseDTO (used for consistency with GET endpoint)
 
 ### Command Models
+
 - **UpdateExpenseCommand**: Input type requiring at least one field from ExpenseEditableFields
 
 ### Internal Types
+
 - **ExpenseRow**: Database row type from Supabase-generated types
 - **TablesUpdate<"expenses">**: Supabase update payload type
 
 ### Validation Types
+
 - **UpdateExpenseInput**: Inferred from UpdateExpenseSchema (Zod schema)
 
 ## 4. Response Details
@@ -75,10 +87,12 @@ JSON object conforming to `UpdateExpenseCommand` type. At least one field must b
 ### Success Response (200 OK)
 
 **Headers:**
+
 - `Content-Type: application/json`
 - `X-Request-Id: <request-id>` (if provided in request)
 
 **Body:**
+
 ```json
 {
   "id": "uuid",
@@ -98,6 +112,7 @@ JSON object conforming to `UpdateExpenseCommand` type. At least one field must b
 ### Error Responses
 
 #### 400 Bad Request
+
 Returned when input validation fails.
 
 ```json
@@ -114,6 +129,7 @@ Returned when input validation fails.
 ```
 
 **Validation Error Scenarios:**
+
 - Invalid or missing expense ID in path
 - No fields provided in request body
 - Invalid UUID format for `id` or `categoryId`
@@ -125,6 +141,7 @@ Returned when input validation fails.
 - Unknown fields in request body (strict validation)
 
 #### 401 Unauthorized
+
 Returned when user is not authenticated.
 
 ```json
@@ -135,9 +152,11 @@ Returned when user is not authenticated.
 ```
 
 #### 403 Forbidden
+
 Returned when user attempts to update an expense they don't own. **Note:** For security reasons, this is typically masked as 404 to prevent information leakage.
 
 #### 404 Not Found
+
 Returned when expense doesn't exist, is soft-deleted, or user lacks ownership.
 
 ```json
@@ -148,11 +167,13 @@ Returned when expense doesn't exist, is soft-deleted, or user lacks ownership.
 ```
 
 **404 Scenarios:**
+
 - Expense ID doesn't exist in database
 - Expense exists but belongs to different user (security: prevents enumeration)
 - Expense is soft-deleted (preserves soft-delete flag as per spec)
 
 #### 500 Internal Server Error
+
 Returned for unexpected server errors.
 
 ```json
@@ -163,6 +184,7 @@ Returned for unexpected server errors.
 ```
 
 **500 Scenarios:**
+
 - Supabase client unavailable
 - Database connection failures
 - Unexpected exceptions in service layer
@@ -200,6 +222,7 @@ Returned for unexpected server errors.
 **File:** `src/lib/services/expenses/updateExpense.ts`
 
 **Function Signature:**
+
 ```typescript
 async function updateExpense({
   supabase: SupabaseClient,
@@ -211,6 +234,7 @@ async function updateExpense({
 ```
 
 **Service Responsibilities:**
+
 - Fetch existing expense with ownership verification
 - Validate category existence (if categoryId changed)
 - Transform command to database payload
@@ -221,16 +245,19 @@ async function updateExpense({
 ## 6. Security Considerations
 
 ### Authentication
+
 - **Method**: Session-based authentication via Supabase Auth
 - **Check Location**: Astro middleware + explicit session validation in route handler
 - **Failure Response**: 401 Unauthorized
 
 ### Authorization
+
 - **Row-Level Security**: All expense queries include `user_id` filter matching authenticated user
 - **Ownership Verification**: Service layer fetches expense with `eq("user_id", userId)` clause
 - **Security by Obscurity**: Return 404 (not 403) when user lacks ownership to prevent expense ID enumeration
 
 ### Input Validation
+
 - **Schema Validation**: Zod schema with strict mode (rejects unknown fields)
 - **Whitespace Normalization**: Trim and collapse whitespace in `name` and `description`
 - **SQL Injection Prevention**: Parameterized queries via Supabase client
@@ -238,17 +265,20 @@ async function updateExpense({
 - **Type Coercion**: Explicit type validation prevents type confusion attacks
 
 ### Data Integrity
+
 - **Foreign Key Validation**: Verify `categoryId` exists before update
 - **Immutable Fields**: `user_id`, `id`, `created_at` cannot be modified
 - **Soft-Delete Preservation**: Update does not modify `deleted` or `deleted_at` fields
 - **Generated Columns**: `merchant_key`, `search_text`, `deleted` auto-updated by database
 
 ### Rate Limiting
+
 - **Recommendation**: Implement rate limiting at reverse proxy level (Cloudflare)
 - **Scope**: Per-user, per-endpoint limits
 - **Not Implemented**: Application-level rate limiting (defer to infrastructure)
 
 ### CORS and Headers
+
 - **Content-Type Validation**: Ensure `application/json`
 - **Request ID Propagation**: Support `X-Request-Id` header for tracing
 - **CORS**: Configured at Astro level (same-origin by default)
@@ -261,6 +291,7 @@ async function updateExpense({
 **Error Source**: Zod validation failure
 
 **Implementation:**
+
 ```typescript
 try {
   input = validateUpdateExpenseCommand(await request.json());
@@ -268,19 +299,18 @@ try {
   return buildValidationErrorResponse(error, {
     requestId,
     defaultMessage: "Invalid request body",
-    code: "VALIDATION_ERROR"
+    code: "VALIDATION_ERROR",
   });
 }
 ```
 
 **Response Format:**
+
 ```json
 {
   "code": "VALIDATION_ERROR",
   "message": "Invalid request body",
-  "errors": [
-    { "path": ["field"], "message": "specific error" }
-  ]
+  "errors": [{ "path": ["field"], "message": "specific error" }]
 }
 ```
 
@@ -289,6 +319,7 @@ try {
 **Error Class:** `UpdateExpenseError`
 
 **Error Codes:**
+
 - `EXPENSE_NOT_FOUND`: Expense doesn't exist or user lacks ownership
 - `EXPENSE_QUERY_FAILED`: Database error when fetching expense
 - `CATEGORY_NOT_FOUND`: Provided categoryId doesn't exist
@@ -296,36 +327,37 @@ try {
 - `EXPENSE_UPDATE_FAILED`: Database error during update operation
 
 **Error Handling in Route Handler:**
+
 ```typescript
 catch (error) {
   if (error instanceof UpdateExpenseError) {
     switch (error.code) {
       case "EXPENSE_NOT_FOUND":
-        return buildErrorResponse(404, { 
-          code: "EXPENSE_NOT_FOUND", 
-          message: "Expense not found" 
+        return buildErrorResponse(404, {
+          code: "EXPENSE_NOT_FOUND",
+          message: "Expense not found"
         }, requestId);
-      
+
       case "CATEGORY_NOT_FOUND":
-        return buildErrorResponse(400, { 
-          code: "CATEGORY_NOT_FOUND", 
-          message: "Category does not exist" 
+        return buildErrorResponse(400, {
+          code: "CATEGORY_NOT_FOUND",
+          message: "Category does not exist"
         }, requestId);
-      
+
       case "EXPENSE_QUERY_FAILED":
       case "CATEGORY_LOOKUP_FAILED":
       case "EXPENSE_UPDATE_FAILED":
-        return buildErrorResponse(500, { 
-          code: error.code, 
-          message: "Unable to update expense" 
+        return buildErrorResponse(500, {
+          code: error.code,
+          message: "Unable to update expense"
         }, requestId);
     }
   }
-  
+
   // Unexpected errors
-  return buildErrorResponse(500, { 
-    code: "UNKNOWN_ERROR", 
-    message: "Unable to update expense" 
+  return buildErrorResponse(500, {
+    code: "UNKNOWN_ERROR",
+    message: "Unable to update expense"
   }, requestId);
 }
 ```
@@ -333,12 +365,14 @@ catch (error) {
 ### Error Logging
 
 **Logging Strategy:**
+
 - **Validation Errors**: Log at DEBUG level (expected user errors)
 - **Authorization Failures**: Log at INFO level with user ID and expense ID
 - **Database Errors**: Log at ERROR level with full context and stack trace
 - **Unexpected Errors**: Log at ERROR level with request ID for correlation
 
 **Logging Implementation:**
+
 - Use error `cause` field to attach contextual information
 - Include `requestId` in all log entries for distributed tracing
 - Avoid logging sensitive data (amounts, descriptions)
@@ -350,26 +384,31 @@ catch (error) {
 **Primary Concern**: Single expense update should complete in < 50ms (p95)
 
 **Optimizations:**
+
 1. **Indexed Lookups**: Primary key index on `expenses.id` ensures O(1) fetch
 2. **Minimal Column Selection**: Only select needed columns in verification query
 3. **Single Round-Trip Update**: Use `.update().select().single()` pattern
 4. **Foreign Key Cache**: Consider caching valid category IDs at application level (future)
 
 ### Payload Size
+
 - **Request**: < 1KB (constrained by field length limits)
 - **Response**: ~500 bytes (single expense DTO)
 - **No Pagination**: Single resource endpoint
 
 ### Caching Strategy
+
 - **Not Applicable**: PATCH is non-idempotent and modifies state
 - **Cache Invalidation**: Client should invalidate cached GET responses after successful PATCH
 
 ### Concurrency
+
 - **Current Implementation**: Last-write-wins (no optimistic locking)
 - **Future Enhancement**: Add `version` or `updated_at` check for 409 Conflict
 - **Database Locking**: Rely on PostgreSQL row-level locks (automatic)
 
 ### Connection Pooling
+
 - **Managed by**: Supabase client SDK
 - **Default Settings**: Use Supabase defaults (no custom tuning needed)
 
@@ -380,6 +419,7 @@ catch (error) {
 **File:** `src/lib/validators/expenses.ts`
 
 **Tasks:**
+
 1. Define `UpdateExpenseSchema` using Zod
 2. Make all fields optional (leveraging existing field validators from `CreateExpenseSchema`)
 3. Add `.refine()` to ensure at least one field is provided
@@ -388,6 +428,7 @@ catch (error) {
 6. Export `validateUpdateExpenseCommand()` function
 
 **Example Schema Structure:**
+
 ```typescript
 export const UpdateExpenseSchema = z
   .object({
@@ -410,6 +451,7 @@ export const UpdateExpenseSchema = z
 **File:** `src/lib/services/expenses/updateExpense.ts`
 
 **Tasks:**
+
 1. Define `UpdateExpenseError` class with error codes:
    - `EXPENSE_NOT_FOUND`
    - `EXPENSE_QUERY_FAILED`
@@ -423,14 +465,15 @@ export const UpdateExpenseSchema = z
    - `toExpenseDTO()`: Map database row to DTO (reuse from getExpenseById or make shared)
 
 3. Implement `updateExpense()` main function:
+
    ```typescript
    export async function updateExpense({
      supabase,
      userId,
      expenseId,
      input,
-     requestId
-   }: UpdateExpenseParams): Promise<ExpenseDTO>
+     requestId,
+   }: UpdateExpenseParams): Promise<ExpenseDTO>;
    ```
 
 4. Service logic flow:
@@ -442,6 +485,7 @@ export const UpdateExpenseSchema = z
    - Map result to DTO and return
 
 **Key Implementation Details:**
+
 - Filter by `user_id` in fetch to enforce authorization
 - Exclude soft-deleted expenses (`eq("deleted", false)`)
 - Only include provided fields in update payload
@@ -453,6 +497,7 @@ export const UpdateExpenseSchema = z
 **File:** `src/pages/api/expenses/[id].ts`
 
 **Tasks:**
+
 1. Add PATCH export alongside existing GET export
 2. Follow same structure as GET handler:
    - Extract `requestId` from request
@@ -471,19 +516,20 @@ export const UpdateExpenseSchema = z
      userId: session.user.id,
      expenseId,
      input,
-     requestId
+     requestId,
    });
    ```
 5. Return success response (200 OK) with updated expense DTO
 6. Handle errors with appropriate status codes (see Error Handling section)
 
 **Error Handling Pattern:**
+
 ```typescript
 export const PATCH: APIRoute = async ({ params, locals, request }) => {
   const requestId = getRequestId(request);
-  
+
   // Validation and auth checks...
-  
+
   try {
     const updated = await updateExpense({...});
     return buildJsonResponse(updated, 200, requestId);
@@ -501,6 +547,7 @@ export const PATCH: APIRoute = async ({ params, locals, request }) => {
 **File:** `src/lib/services/expenses/index.ts`
 
 **Tasks:**
+
 1. Export `updateExpense` function
 2. Export `UpdateExpenseError` class and error code type
 3. Maintain alphabetical order of exports
@@ -514,6 +561,7 @@ export { updateExpense, UpdateExpenseError, type UpdateExpenseErrorCode } from "
 **File:** `api-testing/expenses-update.http` (HTTP client test file)
 
 **Test Scenarios:**
+
 ```http
 ### Update expense amount
 PATCH {{baseUrl}}/api/expenses/{{expenseId}}
@@ -566,6 +614,7 @@ Cookie: {{authCookie}}
 ### Step 8: Code Review and Linting
 
 **Tasks:**
+
 1. Run ESLint and fix any violations
 2. Verify TypeScript compilation (no errors)
 3. Check code formatting (Prettier or similar)
@@ -582,6 +631,7 @@ Cookie: {{authCookie}}
 This implementation plan provides a comprehensive guide for implementing the PATCH `/expenses/{id}` endpoint following established patterns in the codebase. The endpoint will support partial updates with proper validation, authorization, and error handling while maintaining consistency with existing endpoints.
 
 **Key Success Criteria:**
+
 - ✅ Proper input validation with at least one field required
 - ✅ Authorization enforced at service layer
 - ✅ Soft-deleted expenses not updated

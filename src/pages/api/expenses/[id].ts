@@ -139,11 +139,7 @@ export const PATCH: APIRoute = async ({ params, locals, request }) => {
           return buildErrorResponse(404, { code: "EXPENSE_NOT_FOUND", message: "Expense not found" }, requestId);
 
         case "CATEGORY_NOT_FOUND":
-          return buildErrorResponse(
-            400,
-            { code: "CATEGORY_NOT_FOUND", message: "Category does not exist" },
-            requestId
-          );
+          return buildErrorResponse(400, { code: "CATEGORY_NOT_FOUND", message: "Category does not exist" }, requestId);
 
         case "EXPENSE_QUERY_FAILED":
         case "CATEGORY_LOOKUP_FAILED":

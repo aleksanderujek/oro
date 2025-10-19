@@ -49,13 +49,13 @@ function toDeleteExpenseResponse(row: ExpenseRowForDelete): DeleteExpenseRespons
 
 /**
  * Soft-deletes an expense by setting deleted_at timestamp
- * 
+ *
  * Flow:
  * 1. Query expense with matching id, user_id, and deleted=false to verify ownership and prevent redundant deletes
  * 2. Throw EXPENSE_NOT_FOUND if no matching row
  * 3. Update deleted_at to current timestamp
  * 4. Return DeleteExpenseResponse with id, deleted=true, and deletedAt timestamp
- * 
+ *
  * @throws {DeleteExpenseError} When expense not found, already deleted, unauthorized, or database error occurs
  * @returns DeleteExpenseResponse with soft-delete metadata
  */
@@ -108,4 +108,3 @@ export async function softDeleteExpense({
   // Map to response DTO
   return toDeleteExpenseResponse(deletedExpense);
 }
-

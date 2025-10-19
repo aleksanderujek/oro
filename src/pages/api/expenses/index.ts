@@ -1,5 +1,3 @@
-import { ZodError } from "zod";
-
 import type { APIRoute } from "astro";
 
 import { buildErrorResponse, buildJsonResponse, getRequestId } from "../../../lib/http/responses";

@@ -7,3 +7,29 @@ Accept: application/json
 ### Delete expense by ID (soft-delete)
 DELETE {{baseUrl}}/api/expenses/9a88d91b-9b14-443c-8961-72360d93f058
 Accept: application/json
+
+### Restore expense by ID (success - within 7 day retention window)
+POST {{baseUrl}}/api/expenses/9a88d91b-9b14-443c-8961-72360d93f058/restore
+Accept: application/json
+
+### Restore expense - 404 Not Found (expense doesn't exist)
+POST {{baseUrl}}/api/expenses/00000000-0000-0000-0000-000000000000/restore
+Accept: application/json
+
+### Restore expense - 400 Bad Request (invalid UUID format)
+POST {{baseUrl}}/api/expenses/invalid-id/restore
+Accept: application/json
+
+### Restore expense - 409 Conflict (expense not deleted)
+# First, make sure the expense exists and is not deleted
+POST {{baseUrl}}/api/expenses/9a88d91b-9b14-443c-8961-72360d93f058/restore
+Accept: application/json
+
+### Restore expense - 400 Bad Request (unexpected body payload)
+POST {{baseUrl}}/api/expenses/9a88d91b-9b14-443c-8961-72360d93f058/restore
+Content-Type: application/json
+Accept: application/json
+
+{
+  "data": "should not be sent"
+}
