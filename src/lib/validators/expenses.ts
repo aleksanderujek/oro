@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import type { AccountType, CreateExpenseCommand } from "../../types";
+import type { AccountType, CreateExpenseCommand, UpdateExpenseCommand } from "../../types";
 import { squeezeWhitespace } from "../utils";
 
 const ACCOUNT_TYPES = ["cash", "card"] as const;
@@ -348,4 +348,61 @@ export const ExpenseIdSchema = z
 
 export function validateExpenseId(input: unknown): string {
   return ExpenseIdSchema.parse(input);
+}
+
+export const UpdateExpenseSchema = z
+  .object({
+    amount: z
+      .number({ invalid_type_error: "amount must be a number" })
+      .finite("amount must be a finite number")
+      .gt(0, "amount must be greater than zero")
+      .refine((value) => Number.isInteger(value * 100), {
+        message: "amount must have at most two decimal places",
+      })
+      .optional(),
+    name: z
+      .string()
+      .max(64, "name must be at most 64 characters")
+      .transform((value) => squeezeWhitespace(value))
+      .refine((value) => value.length > 0, {
+        message: "name cannot be blank",
+      })
+      .optional(),
+    description: z
+      .string()
+      .max(200, "description must be at most 200 characters")
+      .transform((value) => squeezeWhitespace(value))
+      .refine((value) => value.length > 0, {
+        message: "description cannot be blank",
+      })
+      .optional()
+      .nullable(),
+    occurredAt: z
+      .string({ invalid_type_error: "occurredAt must be an ISO string" })
+      .transform((value) => value.trim())
+      .refine((value) => value.endsWith("Z"), {
+        message: "occurredAt must be an ISO UTC string ending with Z",
+      })
+      .refine((value) => !Number.isNaN(Date.parse(value)), {
+        message: "occurredAt must be a valid ISO timestamp",
+      })
+      .optional(),
+    categoryId: z.string().uuid("categoryId must be a valid UUID").optional(),
+    account: z.enum(ACCOUNT_TYPES).optional(),
+  })
+  .strict()
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "At least one field must be provided",
+  });
+
+export type UpdateExpenseInput = z.infer<typeof UpdateExpenseSchema>;
+
+export function validateUpdateExpenseCommand(input: unknown): UpdateExpenseCommand {
+  const parsed = UpdateExpenseSchema.safeParse(input);
+
+  if (!parsed.success) {
+    throw parsed.error;
+  }
+
+  return parsed.data as UpdateExpenseCommand;
 }
