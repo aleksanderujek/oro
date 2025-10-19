@@ -3,3 +3,7 @@
 ### Get expense by ID
 GET {{baseUrl}}/api/expenses/9a88d91b-9b14-443c-8961-72360d93f058
 Accept: application/json
+
+### Delete expense by ID (soft-delete)
+DELETE {{baseUrl}}/api/expenses/9a88d91b-9b14-443c-8961-72360d93f058
+Accept: application/json
