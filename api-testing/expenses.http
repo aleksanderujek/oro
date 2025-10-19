@@ -14,3 +14,7 @@ Accept: application/json
   "categoryId": "{{categoryId}}",
   "account": "card"
 }
+
+### Get expenses
+GET {{baseUrl}}/api/expenses
+Accept: application/json
