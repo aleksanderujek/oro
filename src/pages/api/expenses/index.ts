@@ -131,4 +131,3 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return buildErrorResponse(500, { code: "UNKNOWN_ERROR", message: "Unable to create expense" }, requestId);
   }
 };
-

@@ -36,7 +36,7 @@ interface GetExpensesParams {
   requestId?: string;
 }
 
-type ExpenseRow = Omit<Tables<"expenses">, "merchant_key" | "search_text" | "user_id">
+type ExpenseRow = Omit<Tables<"expenses">, "merchant_key" | "search_text" | "user_id">;
 type ProfileRow = Tables<"profiles">;
 
 interface DateRange {
@@ -68,11 +68,7 @@ function toExpenseDTO(row: ExpenseRow): ExpenseDTO {
   };
 }
 
-async function fetchUserTimezone(
-  supabase: SupabaseClient,
-  userId: string,
-  requestId?: string
-): Promise<string | null> {
+async function fetchUserTimezone(supabase: SupabaseClient, userId: string, requestId?: string): Promise<string | null> {
   const { data, error } = await supabase
     .from("profiles")
     .select("timezone")
@@ -146,13 +142,7 @@ function computeNextCursor(rows: ExpenseRow[], limit: number): string | null {
   });
 }
 
-function createExpensesQuery({
-  supabase,
-  userId,
-  limit,
-  filters,
-  dateRange,
-}: CreateExpensesQueryParams) {
+function createExpensesQuery({ supabase, userId, limit, filters, dateRange }: CreateExpensesQueryParams) {
   const baseQuery = supabase
     .from("expenses")
     .select(
@@ -317,4 +307,3 @@ function sanitizeTsQuery(term: string): string {
 function escapeForLike(term: string): string {
   return term.replace(/[%_]/g, "\\$&");
 }
-

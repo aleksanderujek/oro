@@ -52,10 +52,7 @@ const isoTimestampSchema = z
     }
   });
 
-const cursorSegmentSchema = z
-  .string()
-  .trim()
-  .min(1, "cursor segments must not be empty");
+const cursorSegmentSchema = z.string().trim().min(1, "cursor segments must not be empty");
 
 const cursorStringSchema = z
   .string({ invalid_type_error: "cursor must be a string" })
@@ -89,29 +86,27 @@ const cursorStringSchema = z
     }
   });
 
-const booleanStringSchema = z
-  .union([z.boolean(), z.string()])
-  .transform((value) => {
-    if (typeof value === "boolean") {
-      return value;
-    }
+const booleanStringSchema = z.union([z.boolean(), z.string()]).transform((value) => {
+  if (typeof value === "boolean") {
+    return value;
+  }
 
-    const normalized = value.trim().toLowerCase();
-    if (normalized === "true") {
-      return true;
-    }
-    if (normalized === "false" || normalized === "") {
-      return false;
-    }
+  const normalized = value.trim().toLowerCase();
+  if (normalized === "true") {
+    return true;
+  }
+  if (normalized === "false" || normalized === "") {
+    return false;
+  }
 
-    throw new z.ZodError([
-      {
-        code: z.ZodIssueCode.custom,
-        message: "boolean value must be 'true' or 'false'",
-        path: [],
-      },
-    ]);
-  });
+  throw new z.ZodError([
+    {
+      code: z.ZodIssueCode.custom,
+      message: "boolean value must be 'true' or 'false'",
+      path: [],
+    },
+  ]);
+});
 
 const limitSchema = z
   .union([
@@ -180,9 +175,7 @@ const categoryIdsSchema = z
   .transform((value) => {
     const list = Array.isArray(value) ? value : [];
 
-    const normalized = list
-      .map((item) => item.trim())
-      .filter((item) => item.length > 0);
+    const normalized = list.map((item) => item.trim()).filter((item) => item.length > 0);
 
     const unique = Array.from(new Set(normalized));
 
@@ -292,4 +285,3 @@ export function normalizeExpenseFilters(params: URLSearchParams | Record<string,
     limit: parsed.limit ?? 50,
   };
 }
-
