@@ -1,0 +1,44 @@
+@baseUrl = http://localhost:3000
+
+### Get merchant mappings - no parameters (default limit: 20)
+GET {{baseUrl}}/api/merchant-mappings
+Accept: application/json
+
+### Get merchant mappings - with custom limit
+GET {{baseUrl}}/api/merchant-mappings?limit=10
+Accept: application/json
+
+### Get merchant mappings - with search filter
+GET {{baseUrl}}/api/merchant-mappings?search=starbucks
+Accept: application/json
+
+### Get merchant mappings - with cursor for pagination
+# Note: Replace the cursor value with an actual cursor from a previous response
+GET {{baseUrl}}/api/merchant-mappings?cursor=starbucks|uuid-goes-here
+Accept: application/json
+
+### Get merchant mappings - combined parameters (search + limit)
+GET {{baseUrl}}/api/merchant-mappings?search=coffee&limit=5
+Accept: application/json
+
+### Get merchant mappings - combined parameters (search + limit + cursor)
+# Note: Replace the cursor value with an actual cursor from a previous response
+GET {{baseUrl}}/api/merchant-mappings?search=cafe&limit=15&cursor=cafemoka|uuid-goes-here
+Accept: application/json
+
+### Get merchant mappings - test maximum limit
+GET {{baseUrl}}/api/merchant-mappings?limit=100
+Accept: application/json
+
+### Get merchant mappings - test limit validation (should fail - exceeds max)
+GET {{baseUrl}}/api/merchant-mappings?limit=150
+Accept: application/json
+
+### Get merchant mappings - test limit validation (should fail - negative)
+GET {{baseUrl}}/api/merchant-mappings?limit=-1
+Accept: application/json
+
+### Get merchant mappings - test empty search (should fail validation)
+GET {{baseUrl}}/api/merchant-mappings?search=
+Accept: application/json
+
