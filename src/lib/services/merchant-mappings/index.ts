@@ -6,3 +6,6 @@ export type { ResolveMerchantMappingErrorCode } from "./resolveMerchantMapping";
 
 export { upsertMerchantMapping, UpsertMerchantMappingError } from "./upsertMerchantMapping";
 export type { UpsertMerchantMappingErrorCode } from "./upsertMerchantMapping";
+
+export { updateMerchantMapping, UpdateMerchantMappingError } from "./updateMerchantMapping";
+export type { UpdateMerchantMappingErrorCode } from "./updateMerchantMapping";

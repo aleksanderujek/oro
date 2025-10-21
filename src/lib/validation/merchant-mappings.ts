@@ -46,3 +46,15 @@ export const UpsertMerchantMappingCommandSchema = z.object({
 });
 
 export type UpsertMerchantMappingCommand = z.infer<typeof UpsertMerchantMappingCommandSchema>;
+
+/**
+ * Validation schema for PATCH /api/merchant-mappings/{id} request body.
+ *
+ * Requires:
+ * - categoryId: valid UUID string for the category to map to
+ */
+export const UpdateMerchantMappingCommandSchema = z.object({
+  categoryId: z.string().uuid("Category ID must be a valid UUID"),
+});
+
+export type UpdateMerchantMappingCommand = z.infer<typeof UpdateMerchantMappingCommandSchema>;

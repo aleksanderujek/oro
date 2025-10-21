@@ -147,3 +147,17 @@ Accept: application/json
   "categoryId": "{{categoryId}}",
 }
 
+### ========================================
+### PATCH /api/merchant-mappings/{id} - Update Merchant Mapping Category
+### ========================================
+
+### Update merchant mapping category (success path - should return 200 OK)
+# Note: First create a merchant mapping using the POST tests above, then replace {id} with the actual ID
+PATCH {{baseUrl}}/api/merchant-mappings/{id}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "categoryId": "{{categoryId}}"
+}
+
