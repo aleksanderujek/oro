@@ -55,11 +55,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
         case "INVALID_CURSOR":
           return buildErrorResponse(400, { code: error.code, message: error.message }, requestId);
         case "MERCHANT_MAPPINGS_QUERY_FAILED":
-          return buildErrorResponse(
-            500,
-            { code: error.code, message: "Unable to load merchant mappings" },
-            requestId
-          );
+          return buildErrorResponse(500, { code: error.code, message: "Unable to load merchant mappings" }, requestId);
         default:
           return buildErrorResponse(400, { code: error.code, message: error.message }, requestId);
       }
@@ -68,4 +64,3 @@ export const GET: APIRoute = async ({ request, locals }) => {
     return buildErrorResponse(500, { code: "UNKNOWN_ERROR", message: "Unable to load merchant mappings" }, requestId);
   }
 };
-

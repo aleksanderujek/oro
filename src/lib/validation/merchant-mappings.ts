@@ -21,3 +21,14 @@ export const GetMerchantMappingsQuerySchema = z.object({
 
 export type GetMerchantMappingsQuery = z.infer<typeof GetMerchantMappingsQuerySchema>;
 
+/**
+ * Validation schema for GET /api/merchant-mappings/resolve query parameters.
+ *
+ * Requires:
+ * - name: non-empty string representing the raw merchant name to resolve
+ */
+export const ResolveMerchantMappingQuerySchema = z.object({
+  name: z.string().min(1, "Merchant name cannot be empty"),
+});
+
+export type ResolveMerchantMappingQuery = z.infer<typeof ResolveMerchantMappingQuerySchema>;

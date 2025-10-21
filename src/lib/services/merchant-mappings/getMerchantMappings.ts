@@ -2,9 +2,7 @@ import type { Tables } from "../../../db/database.types";
 import type { SupabaseClient } from "../../../db/supabase.client";
 import type { MerchantMappingDTO, MerchantMappingListResponse } from "../../../types";
 
-export type GetMerchantMappingsErrorCode =
-  | "MERCHANT_MAPPINGS_QUERY_FAILED"
-  | "INVALID_CURSOR";
+export type GetMerchantMappingsErrorCode = "MERCHANT_MAPPINGS_QUERY_FAILED" | "INVALID_CURSOR";
 
 export class GetMerchantMappingsError extends Error {
   public readonly code: GetMerchantMappingsErrorCode;
@@ -62,22 +60,16 @@ function encodeMerchantMappingCursor(merchantKey: string, id: string): string {
  */
 function parseMerchantMappingCursor(cursor: string): ParsedCursor {
   const lastPipeIndex = cursor.lastIndexOf("|");
-  
+
   if (lastPipeIndex === -1) {
-    throw new GetMerchantMappingsError(
-      "INVALID_CURSOR",
-      "Cursor format is invalid. Expected format: merchant_key|id"
-    );
+    throw new GetMerchantMappingsError("INVALID_CURSOR", "Cursor format is invalid. Expected format: merchant_key|id");
   }
 
   const merchantKey = cursor.substring(0, lastPipeIndex);
   const id = cursor.substring(lastPipeIndex + 1);
 
   if (!merchantKey || !id) {
-    throw new GetMerchantMappingsError(
-      "INVALID_CURSOR",
-      "Cursor components cannot be empty"
-    );
+    throw new GetMerchantMappingsError("INVALID_CURSOR", "Cursor components cannot be empty");
   }
 
   return { merchantKey, id };
@@ -147,7 +139,7 @@ export async function getMerchantMappings({
     const parsedCursor = parseMerchantMappingCursor(cursor);
     const safeMerchantKey = escapePostgrestValue(parsedCursor.merchantKey);
     const safeId = escapePostgrestValue(parsedCursor.id);
-    
+
     // Keyset pagination: (merchant_key > cursor_merchant_key) OR (merchant_key = cursor_merchant_key AND id > cursor_id)
     // Note: PostgREST requires the .or() method with string syntax for complex OR conditions
     query.or(`merchant_key.gt.${safeMerchantKey},and(merchant_key.eq.${safeMerchantKey},id.gt.${safeId})`);
@@ -157,11 +149,9 @@ export async function getMerchantMappings({
   const { data, error } = await query;
 
   if (error) {
-    throw new GetMerchantMappingsError(
-      "MERCHANT_MAPPINGS_QUERY_FAILED",
-      "Unable to load merchant mappings",
-      { cause: { error, userId, search, limit, cursor, requestId } }
-    );
+    throw new GetMerchantMappingsError("MERCHANT_MAPPINGS_QUERY_FAILED", "Unable to load merchant mappings", {
+      cause: { error, userId, search, limit, cursor, requestId },
+    });
   }
 
   // Process results
@@ -175,4 +165,3 @@ export async function getMerchantMappings({
     hasMore,
   };
 }
-

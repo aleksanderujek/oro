@@ -1,0 +1,55 @@
+### Resolve Merchant Mapping - Variables
+@baseUrl = http://localhost:3000
+
+### Test 1: Resolve merchant name - Exact match scenario
+# Expected: 200 OK with exact match (confidence = 1.0)
+GET {{baseUrl}}/api/merchant-mappings/resolve?name=Starbucks Coffee
+
+### Test 2: Resolve merchant name - Trigram match scenario
+# Expected: 200 OK with trigram match (confidence >= 0.8)
+# This assumes you have a similar but not exact merchant key in your mappings
+GET {{baseUrl}}/api/merchant-mappings/resolve?name=Starbuck
+
+
+### Test 3: Resolve merchant name - No match found
+# Expected: 200 OK with match = null
+GET {{baseUrl}}/api/merchant-mappings/resolve?name=SomeNonExistentMerchantXYZ123
+
+
+### Test 4: Resolve merchant name - Normalized matching
+# Tests that normalization works correctly
+# Expected: 200 OK with exact match if "thecoffeeshop" exists
+GET {{baseUrl}}/api/merchant-mappings/resolve?name=The Coffee Shop!!!
+
+
+### Test 5: Error - Missing name parameter
+# Expected: 400 Bad Request
+GET {{baseUrl}}/api/merchant-mappings/resolve
+
+
+### Test 6: Error - Empty name parameter
+# Expected: 400 Bad Request
+GET {{baseUrl}}/api/merchant-mappings/resolve?name=
+
+
+### Test 7: Error - Whitespace-only name parameter
+# Expected: 400 Bad Request (after trim, becomes empty)
+GET {{baseUrl}}/api/merchant-mappings/resolve?name=%20%20%20
+
+
+### Test 8: Error - Unauthorized request
+# Expected: 401 Unauthorized
+GET {{baseUrl}}/api/merchant-mappings/resolve?name=TestMerchant
+
+### Test 9: Resolve with special characters
+# Tests normalization of special characters
+# Expected: 200 OK (should normalize properly)
+GET {{baseUrl}}/api/merchant-mappings/resolve?name=McDonald's Restaurant & Café
+
+
+### Test 10: Resolve with numbers
+# Tests that numbers are preserved in normalization
+# Expected: 200 OK
+GET {{baseUrl}}/api/merchant-mappings/resolve?name=7-Eleven Store
+
+

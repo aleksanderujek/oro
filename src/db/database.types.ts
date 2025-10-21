@@ -361,6 +361,21 @@ export interface Database {
       };
     };
     Functions: {
+      find_best_merchant_match: {
+        Args: {
+          p_merchant_key: string;
+          p_threshold?: number;
+          p_user_id: string;
+        };
+        Returns: {
+          category_id: string;
+          id: string;
+          merchant_key: string;
+          similarity: number;
+          updated_at: string;
+          user_id: string;
+        }[];
+      };
       gtrgm_compress: {
         Args: { "": unknown };
         Returns: unknown;
