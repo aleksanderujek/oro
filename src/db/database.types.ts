@@ -376,6 +376,18 @@ export interface Database {
           user_id: string;
         }[];
       };
+      get_dashboard_metrics: {
+        Args: {
+          p_user_id: string;
+          p_start_date: string;
+          p_end_date: string;
+          p_prev_start_date: string;
+          p_prev_end_date: string;
+          p_account?: Database["public"]["Enums"]["account_type"] | null;
+          p_category_ids?: string[] | null;
+        };
+        Returns: Json;
+      };
       gtrgm_compress: {
         Args: { "": unknown };
         Returns: unknown;
