@@ -161,3 +161,25 @@ Accept: application/json
   "categoryId": "{{categoryId}}"
 }
 
+### ========================================
+### DELETE /api/merchant-mappings/{id} - Delete Merchant Mapping
+### ========================================
+
+### Delete merchant mapping (success path - should return 200 OK)
+# Note: First create a merchant mapping using the POST tests above, then replace {id} with the actual ID
+DELETE {{baseUrl}}/api/merchant-mappings/{id}
+Accept: application/json
+
+### Delete merchant mapping - attempt to delete non-existent mapping (should return 404 Not Found)
+DELETE {{baseUrl}}/api/merchant-mappings/12345678-1234-1234-1234-123456789012
+Accept: application/json
+
+### Delete merchant mapping - invalid UUID format (should return 400 Bad Request)
+DELETE {{baseUrl}}/api/merchant-mappings/invalid-uuid
+Accept: application/json
+
+### Delete merchant mapping - no authentication (should return 401 Unauthorized)
+# Note: This test requires removing authentication headers/cookies if they exist
+DELETE {{baseUrl}}/api/merchant-mappings/12345678-1234-1234-1234-123456789012
+Accept: application/json
+

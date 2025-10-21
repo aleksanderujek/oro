@@ -1,7 +1,5 @@
 import { z } from "zod";
 
-import type { UpdateMerchantMappingCommand } from "../../types";
-
 export const MerchantMappingIdSchema = z
   .string({
     required_error: "merchant mapping ID is required",
