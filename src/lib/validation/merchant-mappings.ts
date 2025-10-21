@@ -32,3 +32,17 @@ export const ResolveMerchantMappingQuerySchema = z.object({
 });
 
 export type ResolveMerchantMappingQuery = z.infer<typeof ResolveMerchantMappingQuerySchema>;
+
+/**
+ * Validation schema for POST /api/merchant-mappings request body.
+ *
+ * Requires:
+ * - merchantName: non-empty string representing the raw merchant name
+ * - categoryId: valid UUID string for the category to map to
+ */
+export const UpsertMerchantMappingCommandSchema = z.object({
+  merchantName: z.string().min(1, "Merchant name cannot be empty"),
+  categoryId: z.string().uuid("Category ID must be a valid UUID"),
+});
+
+export type UpsertMerchantMappingCommand = z.infer<typeof UpsertMerchantMappingCommandSchema>;

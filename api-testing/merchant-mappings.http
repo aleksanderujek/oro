@@ -1,4 +1,5 @@
 @baseUrl = http://localhost:3000
+@categoryId = 00000000-0000-0000-0000-000000000000
 
 ### Get merchant mappings - no parameters (default limit: 20)
 GET {{baseUrl}}/api/merchant-mappings
@@ -41,4 +42,108 @@ Accept: application/json
 ### Get merchant mappings - test empty search (should fail validation)
 GET {{baseUrl}}/api/merchant-mappings?search=
 Accept: application/json
+
+### ========================================
+### POST /api/merchant-mappings - Upsert Merchant Mapping
+### ========================================
+
+### Create new merchant mapping (should return 201 Created)
+POST {{baseUrl}}/api/merchant-mappings
+Content-Type: application/json
+Accept: application/json
+
+{
+  "merchantName": "Starbucks Coffee",
+  "categoryId": "{{categoryId}}"
+}
+
+### Update existing merchant mapping (should return 200 OK)
+# Note: Run the create test above first, then run this to update the same merchant
+POST {{baseUrl}}/api/merchant-mappings
+Content-Type: application/json
+Accept: application/json
+
+{
+  "merchantName": "Starbucks Coffee",
+  "categoryId": "{{categoryId}}"
+}
+
+### Create merchant mapping with special characters (should normalize and create)
+POST {{baseUrl}}/api/merchant-mappings
+Content-Type: application/json
+Accept: application/json
+
+{
+  "merchantName": "McDonald's Restaurant & Cafe",
+  "categoryId": "{{categoryId}}"
+}
+
+### Create merchant mapping with different casing (should normalize to same key)
+# Note: This should update the mapping from "McDonald's Restaurant & Cafe" above
+POST {{baseUrl}}/api/merchant-mappings
+Content-Type: application/json
+Accept: application/json
+
+{
+  "merchantName": "MCDONALD'S RESTAURANT & CAFE",
+  "categoryId": "{{categoryId}}"
+}
+
+### Test invalid UUID for categoryId (should fail with 400)
+POST {{baseUrl}}/api/merchant-mappings
+Content-Type: application/json
+Accept: application/json
+
+{
+  "merchantName": "Test Merchant",
+  "categoryId": "not-a-valid-uuid"
+}
+
+### Test missing merchantName field (should fail with 400)
+POST {{baseUrl}}/api/merchant-mappings
+Content-Type: application/json
+Accept: application/json
+
+{
+  "categoryId": "{{categoryId}}"
+}
+
+### Test missing categoryId field (should fail with 400)
+POST {{baseUrl}}/api/merchant-mappings
+Content-Type: application/json
+Accept: application/json
+
+{
+  "merchantName": "Test Merchant"
+}
+
+### Test empty merchantName (should fail with 400)
+POST {{baseUrl}}/api/merchant-mappings
+Content-Type: application/json
+Accept: application/json
+
+{
+  "merchantName": "",
+  "categoryId": "{{categoryId}}"
+}
+
+### Test non-existent categoryId (should fail with 400)
+POST {{baseUrl}}/api/merchant-mappings
+Content-Type: application/json
+Accept: application/json
+
+{
+  "merchantName": "Test Merchant",
+  "categoryId": "12345678-1234-1234-1234-123456789012"
+}
+
+### Test invalid JSON (should fail with 400)
+POST {{baseUrl}}/api/merchant-mappings
+Content-Type: application/json
+Accept: application/json
+
+{
+  "merchantName": "Test Merchant",
+  "categoryId": "{{categoryId}}",
+}
 
